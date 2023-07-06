@@ -1,15 +1,15 @@
 function getAmortization(){
-    var iAmount = document.getElementById('amount').value.replace(/\,/gi, '')
-    var iApr    = document.getElementById('apr').value
-    var iTerm   = document.getElementById('term').value
-    if (!iAmount || !iApr || !iTerm) {
-        vHideResult()
+    let amount = document.getElementById('amount').value.replace(/\,/gi, '')
+    let apr    = document.getElementById('apr').value
+    let term   = document.getElementById('term').value
+    if (!amount || !apr || !term) {
+        hideResult()
         return false
     }
 
     if (form.checkValidity() === false) {
-        event.preventDefault()
-        event.stopPropagation()
+        figure.preventDefault()
+        figure.stopPropagation()
     }
     form.classList.add('was-validated')
 
@@ -19,57 +19,78 @@ function getAmortization(){
     // Init
     $("#month_pay").text('')
     $("#tbody").text('')
-    var iPayment = iGetPayment(iAmount, iApr, iTerm)
-    month_pay.innerText = "每月付款金額 = $" + iFormatNumber(iPayment.toFixed())
+    let payment = getPayment(amount, apr, term)
+    month_pay.innerText = "每月付款金額 = $" + formatNumber(payment.toFixed())
 
-    var iBalance = iAmount
-    var iInterest = 0.0
-    var iPrincipal = 0.0
-    var iTotalInterest = 0.0
-    for (i = 1; i <= iTerm; i++) {
-        sRow = ''
-        iInterest = iBalance * iApr / 1200
-        iTotalInterest += Math.ceil(iInterest)
-        iPrincipal = iPayment - iInterest
-        iBalance -= iPrincipal
+    let balance = amount
+    let interest = 0.0
+    let principal = 0.0
+    let totalInterest = 0.0
+    for (i = 1; i <= term; i++) {
+        row = ''
+        interest = balance * apr / 1200
+        totalInterest += Math.ceil(interest)
+        principal = payment - interest
+        balance -= principal
 
-        sRow += '<tr><td>'
-        sRow += i
-        sRow += '</td><td>'
-        sRow += (Math.ceil(iBalance) != 1) ? Math.ceil(iBalance) : 0
-        sRow += '</td><td>'
-        sRow += Math.ceil(iPrincipal)
-        sRow += '</td><td>'
-        sRow += Math.ceil(iInterest)
-        sRow += '</td><td>'
-        sRow += Math.ceil(iPayment.toFixed())
-        sRow += '</td><td>'
-        sRow += i * Math.ceil(iPayment.toFixed())
-        sRow += '</td><td>'
-        sRow += Math.ceil(iTotalInterest)
-        sRow += '</td></tr>'
-        $("#tbody").append(sRow)
+        row += '<tr><td>'
+        row += i
+        row += '</td><td>'
+        row += (Math.ceil(balance) != 1) ? Math.ceil(balance) : 0
+        row += '</td><td>'
+        row += Math.ceil(principal)
+        row += '</td><td>'
+        row += Math.ceil(interest)
+        row += '</td><td>'
+        row += Math.ceil(payment.toFixed())
+        row += '</td><td>'
+        row += i * Math.ceil(payment.toFixed())
+        row += '</td><td>'
+        row += Math.ceil(totalInterest)
+        row += '</td></tr>'
+        $("#tbody").append(row)
     }
+    checkSort()
     return false;
 }
 
-function iFormatNumber(n) {
+function formatNumber(n) {
     n += ""
-    var arr = n.split(".")
-    var re = /(\d{1,3})(?=(\d{3})+$)/g
+    let arr = n.split(".")
+    let re = /(\d{1,3})(?=(\d{3})+$)/g
     return arr[0].replace(re, "$1,") + (arr.length == 2 ? "." + arr[1] : "")
 }
 
-function iGetPayment(iAmount, iApr, iTerm) {
-    var iAcc = 0;
-    var iBase = 1 + iApr / 1200;
-    for (i = 1; i <= iTerm; i++) {
+function getPayment(amount, apr, term) {
+    let iAcc = 0;
+    const iBase = 1 + apr / 1200;
+    for (i = 1; i <= term; i++) {
         iAcc += Math.pow(iBase, -i)
     }
-    return iAmount / iAcc;
+    return amount / iAcc;
 }
 
-function vHideResult() {
+function hideResult() {
     $("#result").hide()
     $("#amortizationtable").hide()
+}
+
+function reverseTable() {
+    const ul = document.getElementById("tbody");
+    const list = document.getElementById("tbody").querySelectorAll("tr");
+    let ch_list = Array.prototype.slice.call(list);
+    ch_list.reverse();
+    let str = "";
+    for (let i = 0; i < ch_list.length; i++){
+        str += ch_list[i].outerHTML;
+    }
+
+    while (ul.hasChildNodes()) {
+        ul.removeChild(ul.firstChild);
+      }
+    ul.insertAdjacentHTML('beforeend',str);
+}
+
+function checkSort() {
+    $("#desc").is(":checked") ? reverseTable() : "";
 }
